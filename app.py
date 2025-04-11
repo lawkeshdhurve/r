@@ -21,8 +21,9 @@ class Query(BaseModel):
     query: str
 
 # Load model and assessment data at startup
-model = SentenceTransformer('all-MiniLM-L6-v2')
-df = pd.read_json("assessments.json")
+model = SentenceTransformer('paraphrase-MiniLM-L3-v2')  # Lighter
+
+df = pd.read_json("assessment.json")
 
 @app.post("/recommend")
 async def recommend(query: Query):
