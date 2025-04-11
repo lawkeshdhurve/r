@@ -61,7 +61,7 @@ Visit the FastAPI docs at: `http://127.0.0.1:8000/docs`
 If your project includes an `index.html` file, right-click it in VS Code and choose:
 
 > **Open with Live Server**  
-*(Requires Live Server extension in VS Code)*
+*(Localhost: 5500)*
 
 ---
 
