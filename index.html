@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SHL Assessment Recommender</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9f9;
+      color: #333;
+    }
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 30px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      resize: vertical;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      background-color: #0072ce;
+      color: white;
+      padding: 14px;
+      border: none;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background-color: #005fa3;
+    }
+    .result {
+      margin-top: 30px;
+    }
+    .assessment {
+      border-bottom: 1px solid #eee;
+      padding: 16px 0;
+    }
+    .assessment h3 {
+      margin: 0 0 10px 0;
+    }
+    .score {
+      font-size: 14px;
+      color: #777;
+    }
+    footer {
+      margin-top: 40px;
+      font-size: 13px;
+      text-align: center;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 SHL Assessment Recommender</h1>
+    <p>Paste a job description or query below:</p>
+    <textarea id="jobDescription" placeholder="e.g., Software Engineer with Python and cloud experience..."></textarea>
+    <button onclick="recommendAssessments()">🔎 Recommend Assessments</button>
+    
+    <div class="result" id="resultsContainer"></div>
+
+    <footer>
+      Disclaimer: Assessment data is scraped from SHL. Recommendations are based on semantic similarity.
+    </footer>
+  </div>
+
+  <script>
+    async function recommendAssessments() {
+      const jobText = document.getElementById('jobDescription').value;
+      const resultsContainer = document.getElementById('resultsContainer');
+      resultsContainer.innerHTML = "⏳ Processing...";
+
+      try {
+        const response = await fetch('http://localhost:8000/recommend', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ query: jobText })
+        });
+        
+        const data = await response.json();
+        if (data.length === 0) {
+          resultsContainer.innerHTML = "😕 No matching assessments found.";
+          return;
+        }
+
+        resultsContainer.innerHTML = "";
+        data.forEach(item => {
+          resultsContainer.innerHTML += `
+            <div class="assessment">
+              <h3>${item.title}</h3>
+              <p>${item.description || '<i>No description available.</i>'}</p>
+              <p class="score">Similarity Score: <code>${item.similarity.toFixed(3)}</code></p>
+            </div>
+          `;
+        });
+      } catch (err) {
+        console.error(err);
+        resultsContainer.innerHTML = "❌ Error retrieving recommendations.";
+      }
+    }
+  </script>
+</body>
+</html>
