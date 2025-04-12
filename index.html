@@ -84,39 +84,39 @@
     </footer>
   </div>
 
+  <!-- Load static JS file containing assessments -->
+  <script src="assessment.js"></script>
+
   <script>
-    async function recommendAssessments() {
-      const jobText = document.getElementById('jobDescription').value;
+    function recommendAssessments() {
+      const jobText = document.getElementById('jobDescription').value.toLowerCase();
       const resultsContainer = document.getElementById('resultsContainer');
       resultsContainer.innerHTML = "⏳ Processing...";
 
-      try {
-        const response = await fetch('http://localhost:8000/recommend', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ query: jobText })
-        });
-        
-        const data = await response.json();
-        if (data.length === 0) {
-          resultsContainer.innerHTML = "😕 No matching assessments found.";
-          return;
-        }
+      const matched = assessments
+        .map(item => {
+          const keywords = (item.title + " " + item.description).toLowerCase();
+          const score = jobText.split(/\s+/).filter(word => keywords.includes(word)).length;
+          return { ...item, similarity: score };
+        })
+        .filter(item => item.similarity > 0)
+        .sort((a, b) => b.similarity - a.similarity);
 
-        resultsContainer.innerHTML = "";
-        data.forEach(item => {
-          resultsContainer.innerHTML += `
-            <div class="assessment">
-              <h3>${item.title}</h3>
-              <p>${item.description || '<i>No description available.</i>'}</p>
-              <p class="score">Similarity Score: <code>${item.similarity.toFixed(3)}</code></p>
-            </div>
-          `;
-        });
-      } catch (err) {
-        console.error(err);
-        resultsContainer.innerHTML = "❌ Error retrieving recommendations.";
+      if (matched.length === 0) {
+        resultsContainer.innerHTML = "😕 No matching assessments found.";
+        return;
       }
+
+      resultsContainer.innerHTML = "";
+      matched.forEach(item => {
+        resultsContainer.innerHTML += `
+          <div class="assessment">
+            <h3>${item.title}</h3>
+            <p>${item.description}</p>
+            <p class="score">Similarity Score: <code>${item.similarity}</code></p>
+          </div>
+        `;
+      });
     }
   </script>
 </body>
